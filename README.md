@@ -221,8 +221,67 @@ On the DB Server Instance, the security group is opened to allow port 3306:\
 The Wordpress was able to connect to the DB Server using the mysql utility:\
 <img width="706" alt="Db-wordpress-connect-test" src="https://user-images.githubusercontent.com/61512079/177893956-b2e01476-5a56-4e5b-ad57-afa771d8134a.PNG">
 
+Next permission and configuration  is set for Apache to use Wordpress in the steps following:
 
+In the Apache config file directory(**/etc/httpd/conf.d**), create a config file for the new wordpress site with:
+```bash
+sudo touch wordpress.conf
+sudo chmod 755 wordpress.conf
+sudo vi wordpress.conf
+```
 
+Create virtual host for the wordpress file and paste the config below in it:
+```bash
+<VirtualHost *:80>
+    ServerAdmin webmaster@localhost
+    ServerName wordpress.dummyhost.com
+    DocumentRoot /var/www/html/wordpress
+    ErrorLog /var/log/apache_error.log
+    CustomLog /var/log/access.log combined
+</VirtualHost>
+<Directory /var/www/html/wordpress>
+Require all granted
+AllowOverride All
+</Directory>
+</VirtualHost>
+```
+
+Start the httpd service and enable it on startup and create a firewall rule for httpd using the following commands:
+```bash
+sudo semanage fcontext -a -t httpd_sys_content_t '/var/www/html/wordpress(/.*)?'
+sudo restorecon -Rv /var/www/html/wordpress
+```
+
+In order to run the firewalld command, the program is install using the command below:
+```bash
+sudo yum install firewalld
+```
+
+After installing the firewall program, start the firewalld process with the commands below:
+```bash
+ sudo systemctl start firewalld
+ sudo systemctl start firewalld
+ sudo systemctl enable firewalld
+ ```
+<img width="920" alt="Apache firewall config" src="https://user-images.githubusercontent.com/61512079/180576622-dde2850d-5137-4e38-a571-00c0a40dbbf8.PNG">
+
+Once the program is confirmed running, you can run this commands to create the firewall rule for the httpd as follow:
+```bash
+sudo firewall-cmd --add-service=http --permanent
+sudo firewall-cmd --reload
+```
+In order to test the wordpress site from your PC, the hosts file was edit to use the dummy host name created as follow:
+Run WIndows command prompt as Administrator to be able to edit the hosts file.
+```windows
+C:\Windows\System32\drivers\etc>notepad hosts
+```
+Add the entry below -
+3.16.54.201 wordpress.dummyhost.com
+press ctrl+s to save
+
+Test by opening http://wordpress.dummyhost.com/ on the browser: 
+The output is as shown below:
+<img width="582" alt="Wordpress Page test" src="https://user-images.githubusercontent.com/61512079/180576507-218e2327-a8e6-44e5-b09c-7876919f43b6.PNG">
 
 
 
